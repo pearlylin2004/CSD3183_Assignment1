@@ -9,7 +9,6 @@
 #include "ControlFlow/C_Sequencer.h"
 
 // Student Control Flow Nodes
-#include "ControlFlow/C_RepeatUntilFail.h"
 #include "ControlFlow/C_RandomSequencer.h"
 
 // Example Decorator Nodes
@@ -31,9 +30,7 @@
 
 // Student Leaf Nodes
 #include "Leaf/L_MoveToNearestAgent.h"
-#include "Leaf/L_FleeFromNearestAgent.h"
 #include "Leaf/L_FleeFromWolf.h"
-#include "Leaf/L_CheckNearbyAgent.h"
 #include "Leaf/L_CheckWolfNearby.h"
 #include "Leaf/L_CheckRabbitNearby.h"
 #include "Leaf/L_CheckFairyNearby.h"
