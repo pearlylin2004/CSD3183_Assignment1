@@ -320,16 +320,13 @@ PathResult AStarPather::compute_path(PathRequest& request)
     //While (Open List is not empty) {
     while (openList.size() > 0) {
         //Pop cheapest node off Open List(parent node)
-            //get the list sorted (there are many ways)
+        //get the list sorted (there are many ways)
         int bestIdx = 0;
-        float bestF = openList[0]->cost + openList[0]->heuristic;
-        float bestG = openList[0]->cost;
+        float bestF = openList[0]->cost + openList[0]->heuristic * request.settings.weight;
         for (int k = 1; k < static_cast<int>(openList.size()); ++k) {
-            float f = openList[k]->cost + openList[k]->heuristic;
-            float g = openList[k]->cost;
-            // tie-break by higher g (closer to goal) for consistent ordering
-            if (f < bestF || (f == bestF && g > bestG)) {
-                bestF = f; bestG = g; bestIdx = k;
+            float f = openList[k]->cost + openList[k]->heuristic * request.settings.weight;
+            if (f < bestF) {
+                bestF = f; bestIdx = k;
             }
         }
         //get the cheapest element
@@ -342,7 +339,7 @@ PathResult AStarPather::compute_path(PathRequest& request)
             continue;
         }
 
-        //If node is the Goal Node, then path found(RETURN  found )
+        //If node is the Goal Node, then path found(RETURN  found)
         if (currentNode->pos == goal) {
             // post process the path if needed
             buildPath(currentNode, request);
@@ -359,9 +356,8 @@ PathResult AStarPather::compute_path(PathRequest& request)
             return PathResult::COMPLETE;
         }
         //For (all neighboring child nodes) {
-            //check neighbors
-        std::array<GridPos, 8> neighborOffset = { GridPos{-1,0}, GridPos{-1,1}, GridPos{0, 1}, GridPos{1, 1},
-                                               GridPos{1, 0}, GridPos{1, -1}, GridPos{0, -1}, GridPos{-1, -1} };
+        //check neighbors
+        std::array<GridPos, 8> neighborOffset = { GridPos{-1,0}, GridPos{-1,1}, GridPos{0, 1}, GridPos{1, 1}, GridPos{1, 0}, GridPos{1, -1}, GridPos{0, -1}, GridPos{-1, -1} };
         for (size_t i = 0; i < neighborOffset.size(); i++) {
             //Compute its cost, f(x) = g(x) + h(x)
             //If child node isn t on Open or Closed list, put it on Open List.
@@ -375,12 +371,10 @@ PathResult AStarPather::compute_path(PathRequest& request)
             int nc = currentNode->pos.col + DC[i];
             Node* child = &nodes[nr][nc];
 
-            if (child->status == NodeStatues::CLOSED) continue;
-
             float moveCost = (i % 2 == 0) ? CARD_COST : DIAG_COST;
             float newG = currentNode->cost + moveCost;
-            float newH = computeHeuristic(child->pos, goal, request.settings.heuristic) * request.settings.weight;
-            float newF = newG + newH;
+            float newH = computeHeuristic(child->pos, goal, request.settings.heuristic);
+            float newF = newG + (newH * request.settings.weight);
 
             if (child->status == NodeStatues::INACTIVE) {
                 child->parent = currentNode;
@@ -393,16 +387,14 @@ PathResult AStarPather::compute_path(PathRequest& request)
                     terrain->set_color(child->pos, Colors::Blue);
                 }
             }
-            else if (newF < child->cost + child->heuristic) {
+            else if (newF < child->cost + child->heuristic * request.settings.weight) {
                 child->parent = currentNode;
                 child->cost = newG;
                 child->heuristic = newH;
-                if (child->status == NodeStatues::CLOSED) {
-                    child->status = NodeStatues::OPEN;
-                    openList.push_back(child);
-                    if (request.settings.debugColoring) {
-                        terrain->set_color(child->pos, Colors::Blue);
-                    }
+                child->status = NodeStatues::OPEN;
+                openList.push_back(child);
+                if (request.settings.debugColoring) {
+                    terrain->set_color(child->pos, Colors::Blue);
                 }
             }
         }
