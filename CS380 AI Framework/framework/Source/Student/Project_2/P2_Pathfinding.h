@@ -23,4 +23,38 @@ public:
         makes sense to you.
     */
 
+    enum class NodeStatues {
+		INACTIVE,
+        OPEN,
+        CLOSED
+    };
+
+    struct Node {
+    public:
+        GridPos pos; //position of the node
+        Node* parent = nullptr; //pointer to the parent node
+		float cost = -1.0f; //cost from start to this node
+		float heuristic = -1.0f; //estimated cost from this node to goal
+		NodeStatues status = NodeStatues::INACTIVE;
+        uint8_t     neighbors = 0; //neighbours
+
+    };
+    //Matrix that holds all the nodes in the map
+    std::array< std::array<Node, 40>, 40> nodes;
+    //List of nodes in the openlist to be checked
+	std::vector<Node*> openList;
+
+    //Node List helper functions
+	// reset ad initialize the list
+    void ResetNodes();
+
+    //my codes
+	void precomputeNeighbors();
+	float computeHeuristic(const GridPos& a, const GridPos& b, Heuristic type) const;
+	void buildPath(Node* goalNode, PathRequest& request) const;
+	void rubberband(WaypointList& path) const;
+	void smooth(WaypointList& path) const;
+	void addPointsIfNeeded(WaypointList& path) const;
+    void onMapChange();
+
 };
